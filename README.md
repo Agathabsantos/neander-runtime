@@ -8,7 +8,7 @@ Interpretador do computador didático **Neander**, desenvolvido em C. Lê um arq
 
 ### Pré-requisitos
 - GCC instalado
-- Arquivo `programa.mem` gerado pelo simulador Neander
+- Arquivo `.mem` gerado pelo simulador Neander
 
 ### Compilar
 ```bash
@@ -17,7 +17,13 @@ gcc neander_runtime.c -o neander
 
 ### Rodar
 ```bash
-./neander
+./neander <arquivo.mem> <decimal|hex>
+```
+
+### Exemplos
+```bash
+./neander programa.mem decimal
+./neander programa.mem hex
 ```
 
 ---
@@ -27,7 +33,7 @@ gcc neander_runtime.c -o neander
 1. Abra o simulador Neander
 2. Insira os valores na memória conforme o programa desejado
 3. Salve o arquivo como `programa.mem`
-4. Coloque o arquivo `programa.mem` na mesma pasta do código C
+4. Coloque o arquivo na mesma pasta do código C
 
 ### Exemplo de programa (soma de dois números)
 
@@ -65,21 +71,64 @@ gcc neander_runtime.c -o neander
 
 ## Saída do programa
 
-Ao rodar, o programa imprime o estado final da CPU e o mapa completo de memória:
-
+### Formato decimal
 ```
 Arquivo carregado com sucesso!
+
+=== Mapa de Memória ANTES da execução (0-255) ===
+MEMORIA[  0] =  32
+MEMORIA[  1] = 128
+...
+MEMORIA[128] =   5
+MEMORIA[129] =   3
+MEMORIA[130] =   0
+...
+
+=== Valor final dos registradores ===
 AC = 8
 PC = 7
-Z  = 0
-N  = 0
+Flag N = 0
+Flag Z = 0
+Acessos à memória = 10
+Instruções lidas e executadas = 4
 
-=== Mapa de Memória (0-255) ===
-MEMORIA[  0] =  32 (0x20)
-MEMORIA[  1] = 128 (0x80)
+=== Mapa de Memória DEPOIS da execução (0-255) ===
+MEMORIA[  0] =  32
+MEMORIA[  1] = 128
 ...
-MEMORIA[128] =   5 (0x05)
-MEMORIA[129] =   3 (0x03)
-MEMORIA[130] =   8 (0x08)
+MEMORIA[128] =   5
+MEMORIA[129] =   3
+MEMORIA[130] =   8
+...
+```
+
+### Formato hexadecimal
+```
+Arquivo carregado com sucesso!
+
+=== Mapa de Memória ANTES da execução (0-255) ===
+MEMORIA[0x00] = 0x20
+MEMORIA[0x01] = 0x80
+...
+MEMORIA[0x80] = 0x05
+MEMORIA[0x81] = 0x03
+MEMORIA[0x82] = 0x00
+...
+
+=== Valor final dos registradores ===
+AC = 0x08
+PC = 0x07
+Flag N = 0x00
+Flag Z = 0x00
+Acessos à memória = 10
+Instruções lidas e executadas = 4
+
+=== Mapa de Memória DEPOIS da execução (0-255) ===
+MEMORIA[0x00] = 0x20
+MEMORIA[0x01] = 0x80
+...
+MEMORIA[0x80] = 0x05
+MEMORIA[0x81] = 0x03
+MEMORIA[0x82] = 0x08
 ...
 ```
