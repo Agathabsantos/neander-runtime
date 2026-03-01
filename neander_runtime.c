@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
+#include <string.h>
 
 //Registradores
 int8_t AC = 0; //acumulador
@@ -55,46 +56,76 @@ void carregar_arquivo(char *caminho){
     fclose(arquivo);
 }
 
-int main(){
-    
-    carregar_arquivo("programa.mem");
+void imprimir_mapa(char *titulo, char *formato){
+    printf("\n=== %s ===\n", titulo);
+    for(int i = 0; i < 256; i++){
+        if(strcmp(formato, "hex") == 0){
+            printf("MEMORIA[0x%02X] = 0x%02X\n", i, MEMORIA[i]);
+        } else {
+            printf("MEMORIA[%3d] = %3d\n", i, MEMORIA[i]);
+        }
+    }
+}
+
+int main(int argc, char *argv[]){
+    if(argc != 3){
+        printf("Uso: ./neander <arquivo.mem> <decimal|hex>\n");
+        return 1;
+    }
+    char *arquivo = argv[1];
+    char *formato = argv[2];
+
+    carregar_arquivo(arquivo);
 
     PC = 0;
-
     int executando = 1;
+    int acessos_memoria = 0;
+    int instrucoes_executadas = 0;
+
+    imprimir_mapa("Mapa de Memória ANTES da execução (0-255)", formato);
 
     while(executando){
         uint8_t instrucao = MEMORIA[PC];
+        acessos_memoria++;
         PC++;
+        instrucoes_executadas++;
 
         if(instrucao == 0x20){  //LDA
             uint8_t endereco = MEMORIA[PC];
+            acessos_memoria++;
             PC++;
             AC = MEMORIA[endereco];
+            acessos_memoria++;
             atualizar_flags();
         } 
 
         else if(instrucao == 0x30){ //ADD
             uint8_t endereco = MEMORIA[PC];
+            acessos_memoria++;
             PC++;
             AC = AC + MEMORIA[endereco];
+            acessos_memoria++;
             atualizar_flags();
         }
 
         else if(instrucao == 0x10){ //STA, pega o valor o do acumulador e guarda em um endereço de memória
             uint8_t endereco = MEMORIA[PC];
+            acessos_memoria++;
             PC++;
             MEMORIA[endereco] = AC;
+            acessos_memoria++;
         }
 
         else if(instrucao == 0x80){ //JMP, pula para o HLT
             uint8_t endereco = MEMORIA[PC];
+            acessos_memoria++;
             PC++;
             PC = endereco;
         }
 
         else if(instrucao == 0xA0){ //JZ, pula para o HLT se AC = 0
             uint8_t endereco = MEMORIA[PC];
+            acessos_memoria++;
             PC++;
             if(Z == 1){
                 PC = endereco;
@@ -103,6 +134,7 @@ int main(){
 
         else if(instrucao == 0x90){ //JN, pula para HLT se AC < 0
             uint8_t endereco = MEMORIA[PC];
+            acessos_memoria++;
             PC++;
             if(N == 1){
                 PC = endereco;
@@ -111,15 +143,19 @@ int main(){
 
         else if(instrucao == 0x50){ //AND
             uint8_t endereco = MEMORIA[PC];
+            acessos_memoria++;
             PC++;
             AC = AC & MEMORIA[endereco];
+            acessos_memoria++;
             atualizar_flags();
         }
 
         else if(instrucao == 0x40){ //OR
             uint8_t endereco = MEMORIA[PC];
+            acessos_memoria++;
             PC++;
             AC = AC | MEMORIA[endereco];
+            acessos_memoria++;
             atualizar_flags();
         }
 
@@ -144,16 +180,22 @@ int main(){
     }
 
     printf("\n=== Valor final dos registradores ===\n");
-    printf("AC = %d\n", AC);
-    printf("PC = %d\n", PC);
-    printf("Z = %d\n", Z);
-    printf("N = %d\n", N);
-
-    printf("\n=== Mapa de Memória (0-255) ===\n");
-    for(int i = 0; i < 256; i++){
-        printf("MEMORIA[%3d] = %3d (0x%02X)\n", i, MEMORIA[i], MEMORIA[i]);
-
+    if(strcmp(formato, "hex") == 0){
+        printf("AC = 0x%02X\n", (uint8_t)AC);
+        printf("PC = 0x%02X\n", PC);
+        printf("Flag N = 0x%02X\n", N);
+        printf("Flag Z = 0x%02X\n", Z);
+    } else {
+        printf("AC = %d\n", AC);
+        printf("PC = %d\n", PC);
+        printf("Flag N = %d\n", N);
+        printf("Flag Z = %d\n", Z);
     }
+    
+    printf("Acessos à memória = %d\n", acessos_memoria);
+    printf("Instruções lidas e executadas = %d", instrucoes_executadas);
+
+    imprimir_mapa("Mapa de Memória DEPOIS da execução (0-255)", formato);
 
     return 0;
 }
