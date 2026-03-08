@@ -31,7 +31,7 @@ void carregar_arquivo(char *caminho){
 
     if (arquivo == NULL) {
         printf("Erro ao abrir o arquivo!\n");
-        return;
+        exit(1);
     }
 
     // Lê os 2 bytes do header
@@ -42,7 +42,7 @@ void carregar_arquivo(char *caminho){
     if(header[0] != 0x03 || header[1] != 0x4E){
         printf("Arquivo inválido!\n");
         fclose(arquivo);
-        return;
+        exit(1);
     }
 
     // Lê as 256 posições de memória
@@ -50,6 +50,12 @@ void carregar_arquivo(char *caminho){
         uint8_t par[2];
         fread(par, 1, 2, arquivo);
         MEMORIA[i] = par[0];
+    }
+
+    if (ferror(arquivo)) {
+        printf("Erro durante leitura do arquivo!\n");
+        fclose(arquivo);
+        exit(1);
     }
 
     printf("Arquivo carregado com sucesso!\n");
@@ -75,6 +81,11 @@ int main(int argc, char *argv[]){
     char *arquivo = argv[1];
     char *formato = argv[2];
 
+    if(strcmp(formato, "hex") != 0 && strcmp(formato, "decimal") != 0){
+        printf("Formato inválido. Use 'decimal' ou 'hex'.\n");
+        return 1;
+    }
+
     carregar_arquivo(arquivo);
 
     PC = 0;
@@ -85,6 +96,7 @@ int main(int argc, char *argv[]){
     imprimir_mapa("Mapa de Memória ANTES da execução (0-255)", formato);
 
     while(executando){
+
         uint8_t instrucao = MEMORIA[PC];
         acessos_memoria++;
         PC++;
@@ -193,7 +205,7 @@ int main(int argc, char *argv[]){
     }
     
     printf("Acessos à memória = %d\n", acessos_memoria);
-    printf("Instruções lidas e executadas = %d", instrucoes_executadas);
+    printf("Instruções lidas e executadas = %d\n", instrucoes_executadas);
 
     imprimir_mapa("Mapa de Memória DEPOIS da execução (0-255)", formato);
 
